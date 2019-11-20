@@ -1,0 +1,86 @@
+import java.util.ArrayList;
+
+public class Agenda {
+
+    private ArrayList<Contato> contatos;
+    private BancoDeDados bd;
+
+    public Agenda() {
+        bd = new BancoDeDados();        
+        contatos = bd.getContatos();
+    }
+
+    public boolean adicionaContato(Contato contato) {
+        if(contato.eValido()){
+            contatos.add(contato);
+            bd.salvar(contato);
+            return true;
+        }
+        return false;
+    }
+
+    public ArrayList<Contato> getContatos() {
+        return contatos;
+    }
+
+    public ArrayList<Contato> getContatosFavoritos() {
+        ArrayList<Contato> contatosFavoritos = new ArrayList<>();
+
+        for(Contato contato : contatos) {
+            if (contato.eFavorito()) {
+                contatosFavoritos.add(contato);
+            }
+        }
+
+        return contatosFavoritos;
+    }
+
+    public int getQuantidadeDeContatosFavoritos() {
+        ArrayList<Contato> contatosFavoritos = new ArrayList<>();
+
+        for(Contato contato : contatos) {
+            if (contato.eFavorito()) {
+                contatosFavoritos.add(contato);
+            }
+        }        
+
+        return contatosFavoritos.size();
+    }
+
+    public Contato getContato(int indice) {
+        if (indice >= 0 && indice < contatos.size()) {
+            return contatos.get(indice);
+        }
+        return null;               
+    }
+
+    public int getQuantidadeDeContatos() {
+        return contatos.size();
+    }
+
+    public Contato remover(int indice) {
+        if (indice >= 0 && indice < contatos.size()) {
+            Contato contatoRemovido = contatos.remove(indice);
+            bd.salvar(contatos);
+            return contatoRemovido;
+        }
+        return null;
+    }
+
+    public ArrayList<Contato> pesquisar(String palavraChave) {
+        ArrayList<Contato> contatosEncontradas = new ArrayList<>();
+
+        palavraChave = palavraChave.toLowerCase();
+
+        for(Contato contato : contatos) {
+            String nome = contato.getNome().toLowerCase();
+            String sobrenome = contato.getSobrenome().toLowerCase();
+
+            if (nome.contains(palavraChave) || sobrenome.contains(palavraChave)) {
+                contatosEncontradas.add(contato);
+            }
+        }
+
+        return contatosEncontradas;
+    }
+}
