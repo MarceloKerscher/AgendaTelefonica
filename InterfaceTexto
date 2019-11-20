@@ -1,0 +1,275 @@
+import java.util.Scanner;
+import java.util.ArrayList;
+
+public class InterfaceTexto {
+    private static final String SAIR = "sair";
+
+    private Scanner entrada;
+    private String opcao;
+
+    private Agenda agenda;
+
+    public InterfaceTexto() {
+        entrada = new Scanner(System.in);
+        agenda = new Agenda();
+    }
+
+    public void renderizar() {
+        do {
+            limpar();
+            menu();
+            leiaVerifique();
+        } while(!opcao.equals(SAIR));
+    }
+
+    private void leiaVerifique() {
+        opcao = leia("Digite a opção escolhida");
+        limpar();
+        switch(opcao) {
+            case "1":
+            adicionar();
+            break;
+            case "2":
+            listar();
+            break;
+            case "3":
+            remover();
+            break;
+            case "4":
+            pesquisar();
+            break;
+            case "5":
+            listarFavoritos();
+            break;  
+            case SAIR:
+            sln("Tchau!");
+            return;
+            default:
+            sln("Opção inválida!!");
+        }
+        pause();
+    }
+
+    private void adicionar() {
+        String nome = leia("Digite o nome do contato: ");
+        String sobrenome = leia("Digite sobrenome do contato: ");
+        boolean eFavorito = leiaBoleano("Marcar como favorito?");
+
+        Contato contato = new Contato(nome, sobrenome, eFavorito);
+
+        if (agenda.adicionaContato(contato))
+            sln("Contato adicionado com sucesso!");
+        else {
+            sln();
+            sln("Contato não adicionado, os seguintes erros foram encontrados: ");
+            for(String erro : contato.getErros()) {
+                sln("  " + erro);
+            }
+        }
+    }
+
+    private void listar() {
+        if (agenda.getQuantidadeDeContatos() == 0) {
+            sln("Não exitem contatos cadastrados!");
+            return;
+        }
+
+        listarContatos(agenda.getContatos());
+    }
+
+    private void listarFavoritos() {
+        if (agenda.getQuantidadeDeContatosFavoritos() == 0) {
+            sln("Não exitem contatos Favoritos cadastrados!");
+            return;
+        }
+
+        listarContatos(agenda.getContatosFavoritos());
+    }
+
+    private void remover() {
+        if (agenda.getQuantidadeDeContatos() == 0) {
+            sln("Não exitem contatos cadastrados!");
+            return;
+        }
+
+        sln();
+        listarContatosComIndice();
+        sln();
+
+        String indiceS = leia("Digite o índice do contato que deseja remover");
+
+        try {
+            int indice = Integer.parseInt(indiceS);
+
+            Contato contatoListado = agenda.getContato(indice);
+
+            if (contatoListado != null) {
+                sln();
+                sln("Índice: " + indice);
+                sln("Nome completo: " + contatoListado.getNomeCompleto());
+                sln("Favorito: " + converteBooleanEmString(contatoListado.eFavorito()));
+                sln();
+            } else {
+                sln();
+                sln("Não existe um contato com o índice " + indice);
+                sln();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            sln();
+            sln(indiceS + " não é um número");
+            sln();
+            return;
+        }
+
+        boolean confirma = leiaBoleano("Tem certeza que deseja remover? ");        
+
+        if (confirma == true)
+            try {
+                int indice = Integer.parseInt(indiceS);
+
+                Contato contatoRemovido = agenda.remover(indice);
+
+                if (contatoRemovido != null) {
+                    sln("O contato '" + contatoRemovido.getNomeCompleto() + "' foi removido com sucesso!");
+                } else {
+                    sln("Não existe um contato com o índice " + indice);
+                }
+            } catch (NumberFormatException e) {
+                sln(indiceS + " não é um número");
+            }
+
+        else
+            sln("Ação cancelada pelo usuário!");
+        return;
+    }
+
+    private void pesquisar() {
+        if (agenda.getQuantidadeDeContatos() == 0) {
+            sln("Não exitem contatos cadastrados!");
+            return;
+        }
+
+        String palavraChave = leia("Digite o termo de busca");
+
+        listarContatos(agenda.pesquisar(palavraChave));
+    }
+
+    private void listarContatosComIndice() {
+        sln("-----------------------------------------");
+        sln("|      Visualização dos Contatos         |");
+        sln("-----------------------------------------");
+
+        ArrayList<Contato> contatos = agenda.getContatos();
+
+        for(int i = 0; i < contatos.size(); i++) {
+            Contato contato = contatos.get(i);
+
+            sln("Índice: " + i);
+            sln("Nome completo: " + contato.getNomeCompleto());
+            sln("Favorito: " + converteBooleanEmString(contato.eFavorito()));
+            sln("-----------------------------------------");
+        }
+    }
+    
+    private void listarContatos(ArrayList<Contato> contatos) {
+        sln("-----------------------------------------");
+        sln("|      Visualização dos Contatos         |");
+        sln("-----------------------------------------");
+        sln(contatos.size() + " encontrado(s)");
+        sln("-----------------------------------------");
+
+        int i = 0;
+        for(Contato contato : contatos) {
+            sln("Contato: " + ++i);
+            sln("Nome completo: " + contato.getNomeCompleto());
+            sln("Favorito: " + converteBooleanEmString(contato.eFavorito()));
+            sln("-----------------------------------------");
+        } 
+    }
+
+    private void listarContatoDesejaRemover() {
+        String indiceS = leia("Digite o índice do contato que deseja remover");
+
+        try {
+            int indice = Integer.parseInt(indiceS);
+
+            Contato contatoListado = agenda.getContato(indice);
+
+            if (contatoListado != null) {
+                sln(contatoListado.getNomeCompleto());
+            } else {
+                sln("Não existe um contato com o índice " + indice);
+            }
+        } catch (NumberFormatException e) {
+            sln(indiceS + " não é um número");
+        }
+    }
+
+    private void menu() {
+        sln("########################################");
+        sln("#         Agenda de Contatos           #");
+        sln("########################################");
+        sln("#               Menu                   #");
+        sln("########################################");
+        sln("# 1 - Adicionar                        #");
+        sln("# 2 - Listar                           #");
+        sln("# 3 - Remover                          #");
+        sln("# 4 - Pesquisar                        #");
+        sln("# 5 - Listar contatos favoritos        #");
+        sln("#                                      #");        
+        sln("# Digite sair para encerrar            #");
+        sln("########################################");
+        sln("");
+    }
+
+    private void pause() {
+        sln();
+        sln("Pressione a tecla enter para continuar..");
+        entrada.nextLine();
+    }
+    
+    private boolean leiaBoleano(String s) {
+        String ss = s + "\n[S]im, [N]ão"; 
+        String entrada = leia(ss).toLowerCase();
+
+        if (entrada.equals("s") || entrada.equals("sim"))
+            return true;
+
+        return false;
+    } 
+
+    private String converteBooleanEmString(boolean trueOuFalse) {
+        String aux = "";
+        
+        if (trueOuFalse == true)
+            aux = "Sim";
+            
+        else    
+            aux = "Não";
+            
+        return aux;        
+    }
+    
+    private String leia(String s) {
+        sln(s);
+        s("> ");
+        return entrada.nextLine().trim();
+    }
+
+    private void limpar() {
+        s("\f");
+    }
+
+    private void sln() {
+        System.out.println();
+    }
+
+    private void sln(String s) {
+        System.out.println(s);
+    }
+
+    private void s(String s) {
+        System.out.print(s);
+    }
+}
